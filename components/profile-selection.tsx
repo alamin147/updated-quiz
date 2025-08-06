@@ -61,44 +61,15 @@ const FloatingStickers = () => {
 }
 
 interface ProfileSelectionProps {
+  profiles: ChildProfile[]
   onChildSelect: (child: ChildProfile) => void
   onCreateProfile: () => void
   onParentLogin: () => void
   accessibilityOptions: AccessibilityOptions
 }
 
-// Mock child profiles
-const mockChildren: ChildProfile[] = [
-  {
-    id: "is",
-    name: "Is",
-    avatar: "🦝",
-    scenariosCompleted: 8,
-    totalScenarios: 12,
-    avgPositiveExpression: 85,
-    goodChoicePercentage: 78,
-    timeSpent: 45,
-    recentActivity: [
-      { scenario: "Sharing Toy", choice: "Share with friend", outcome: "positive", timestamp: "2024-01-05" },
-      { scenario: "Feeling Frustrated", choice: "Take deep breaths", outcome: "positive", timestamp: "2024-01-04" },
-    ],
-  },
-  {
-    id: "po",
-    name: "Po",
-    avatar: "🐠",
-    scenariosCompleted: 3,
-    totalScenarios: 12,
-    avgPositiveExpression: 65,
-    goodChoicePercentage: 55,
-    timeSpent: 20,
-    recentActivity: [
-      { scenario: "Making Friends", choice: "Say hello nicely", outcome: "positive", timestamp: "2024-01-03" },
-    ],
-  },
-]
-
 export default function ProfileSelection({
+  profiles,
   onChildSelect,
   onCreateProfile,
   onParentLogin,
@@ -154,7 +125,7 @@ export default function ProfileSelection({
 
         {/* Child Profiles */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {mockChildren.map((child) => (
+          {profiles.map((child) => (
             <Card
               key={child.id}
               className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${

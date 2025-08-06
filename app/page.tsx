@@ -11,6 +11,7 @@ import ParentDashboard from "@/components/parent-dashboard"
 import ScenarioSelection from "@/components/scenario-selection"
 import ScenarioPlay from "@/components/scenario-play"
 import Settings from "@/components/settings"
+import { useProfiles, useAccessibilitySettings, useAppState } from "@/hooks/use-profile-storage"
 
 export type AppScreen =
   | "splash"
@@ -67,27 +68,50 @@ export type Scenario = {
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>("splash")
-  const [accessibilityOptions, setAccessibilityOptions] = useState<AccessibilityOptions>({
-    textToSpeech: false,
-    enhancedNarration: false,
-    narrationSpeed: 1,
-    textSize: "medium",
-    backgroundMusic: true,
-    soundEffects: true,
-  })
-  const [selectedChild, setSelectedChild] = useState<ChildProfile | null>(null)
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null)
-  const [isFirstTime, setIsFirstTime] = useState(true)
 
-  // Auto-advance from splash screen
+  // Use localStorage hooks for persistent data
+  const {
+    profiles,
+    addProfile,
+    updateProfile,
+    deleteProfile,
+    getProfile,
+    profilesLoaded
+  } = useProfiles()
+
+  const {
+    accessibilityOptions,
+    setAccessibilityOptions,
+    accessibilityLoaded
+  } = useAccessibilitySettings()
+
+  const {
+    isFirstTime,
+    selectedChildId,
+    markAsReturningUser,
+    selectChild,
+    clearSelectedChild,
+    appStateLoaded
+  } = useAppState()
+
+  // Get selected child from stored ID, ensuring it's not undefined
+  const selectedChild: ChildProfile | null = selectedChildId ? getProfile(selectedChildId) || null : null
+
+  // Auto-advance from splash screen when data is loaded
   useEffect(() => {
-    if (currentScreen === "splash") {
+    if (currentScreen === "splash" && appStateLoaded && profilesLoaded && accessibilityLoaded) {
       const timer = setTimeout(() => {
         setCurrentScreen(isFirstTime ? "onboarding" : "profile-selection")
       }, 3000)
       return () => clearTimeout(timer)
     }
-  }, [currentScreen, isFirstTime])
+  }, [currentScreen, isFirstTime, appStateLoaded, profilesLoaded, accessibilityLoaded])
+
+  // Don't render anything until data is loaded
+  if (!appStateLoaded || !profilesLoaded || !accessibilityLoaded) {
+    return <SplashScreen onAccessibilityClick={() => {}} />
+  }
 
   const handleScreenChange = (screen: AppScreen) => {
     setCurrentScreen(screen)
@@ -98,8 +122,15 @@ export default function App() {
   }
 
   const handleChildSelect = (child: ChildProfile) => {
-    setSelectedChild(child)
+    selectChild(child.id)
     setCurrentScreen("scenario-selection")
+  }
+
+  const handleChildCreate = (child: ChildProfile) => {
+    addProfile(child)
+    selectChild(child.id)
+    setCurrentScreen("scenario-selection")
+    markAsReturningUser()
   }
 
   const handleScenarioSelect = (scenario: Scenario) => {
@@ -132,6 +163,7 @@ export default function App() {
       case "profile-selection":
         return (
           <ProfileSelection
+            profiles={profiles}
             onChildSelect={handleChildSelect}
             onCreateProfile={() => setCurrentScreen("create-profile")}
             onParentLogin={() => setCurrentScreen("parent-login")}
@@ -142,10 +174,7 @@ export default function App() {
       case "create-profile":
         return (
           <CreateChildProfile
-            onComplete={(child) => {
-              setSelectedChild(child)
-              setCurrentScreen("scenario-selection")
-            }}
+            onComplete={handleChildCreate}
             onBack={() => setCurrentScreen("profile-selection")}
             accessibilityOptions={accessibilityOptions}
           />
