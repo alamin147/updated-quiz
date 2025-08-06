@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Lock, Trash2, Settings, HelpCircle } from "lucide-react"
+import { Plus, Lock, Trash2, Settings, HelpCircle, Star } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +14,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import type { AccessibilityOptions, ChildProfile } from "@/app/page"
 
 // Floating Stickers Background Component
@@ -88,6 +94,7 @@ interface ProfileSelectionProps {
   onDeleteProfile: (childId: string) => void
   onParentLogin: () => void
   onSettings: () => void
+  onBookmarkProfile?: (childId: string) => void
   accessibilityOptions: AccessibilityOptions
 }
 
@@ -98,11 +105,14 @@ export default function ProfileSelection({
   onDeleteProfile,
   onParentLogin,
   onSettings,
+  onBookmarkProfile,
   accessibilityOptions,
 }: ProfileSelectionProps) {
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [profileToDelete, setProfileToDelete] = useState<ChildProfile | null>(null)
+  const [helpModalOpen, setHelpModalOpen] = useState(false)
+  const [helpType, setHelpType] = useState<"parent" | "child" | null>(null)
 
   const speakText = (text: string) => {
     if (accessibilityOptions.textToSpeech && "speechSynthesis" in window) {
@@ -133,59 +143,121 @@ export default function ProfileSelection({
     setDeleteDialogOpen(false)
   }
 
+  const handleHelpClick = () => {
+    setHelpModalOpen(true)
+    setHelpType(null)
+  }
+
+  const handleHelpTypeSelect = (type: "parent" | "child") => {
+    setHelpType(type)
+    speakText(`Showing ${type} help guide`)
+  }
+
+  const getHelpSteps = () => {
+    if (helpType === "parent") {
+      return [
+        {
+          title: "Welcome to EmoStory Parent Dashboard",
+          content: "EmoStory helps children learn emotional intelligence through interactive scenarios."
+        },
+        {
+          title: "Creating Child Profiles",
+          content: "Click 'Add New Child' to create a profile. Each child gets their own avatar and progress tracking."
+        },
+        {
+          title: "Monitoring Progress",
+          content: "View your child's emotional learning progress, scenario completion, and positive choice percentage."
+        },
+        {
+          title: "Accessing Settings",
+          content: "Click the settings icon (⚙️) to customize accessibility options, audio settings, and privacy controls."
+        },
+        {
+          title: "Parent Dashboard",
+          content: "Use 'Parent/Therapist Login' to access detailed analytics and advanced settings."
+        }
+      ]
+    } else if (helpType === "child") {
+      return [
+        {
+          title: "Welcome to EmoStory! 🎮",
+          content: "Let's learn about emotions together through fun stories and games!"
+        },
+        {
+          title: "Choose Your Character",
+          content: "Click on your profile picture to start playing. Each character is special and unique!"
+        },
+        {
+          title: "Playing Scenarios",
+          content: "You'll see different situations and choose what to do. Think about how others might feel!"
+        },
+        {
+          title: "Making Good Choices",
+          content: "Try to make choices that help others feel happy. You'll earn stars for being kind!"
+        },
+        {
+          title: "Ask for Help",
+          content: "If you need help, ask a grown-up! They can help you understand the stories better."
+        }
+      ]
+    }
+    return []
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 relative">
       <FloatingStickers />
       <div className="relative z-10">
         {/* Header with Settings and Help */}
-        <div className="flex justify-between items-center p-6">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-semibold text-gray-800">EmoStory</h2>
+        <div className="flex justify-between items-center p-4 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">EmoStory</h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               onClick={onSettings}
               variant="ghost"
               size="icon"
-              className="hover:bg-white/20 transition-colors"
+              className="hover:bg-white/20 transition-colors h-8 w-8 sm:h-10 sm:w-10"
               title="Settings"
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <Button
+              onClick={handleHelpClick}
               variant="ghost"
               size="icon"
-              className="hover:bg-white/20 transition-colors"
+              className="hover:bg-white/20 transition-colors h-8 w-8 sm:h-10 sm:w-10"
               title="Help & Tutorial"
             >
-              <HelpCircle className="h-5 w-5" />
+              <HelpCircle className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-8">
+        <div className="flex flex-col items-center justify-center p-4 sm:p-8">
           <div className="w-full max-w-4xl">
             {/* Title */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 sm:mb-12">
           <h1
             className={`font-bold text-gray-900 mb-4 ${
               accessibilityOptions.textSize === "large"
-                ? "text-5xl"
+                ? "text-3xl sm:text-5xl"
                 : accessibilityOptions.textSize === "small"
-                  ? "text-3xl"
-                  : "text-4xl"
+                  ? "text-2xl sm:text-3xl"
+                  : "text-3xl sm:text-4xl"
             }`}
             onClick={() => speakText("Who is playing today?")}
           >
             Who is Playing? 🎮
           </h1>
           <p
-            className={`text-gray-600 ${
+            className={`text-gray-600 px-4 ${
               accessibilityOptions.textSize === "large"
-                ? "text-xl"
+                ? "text-lg sm:text-xl"
                 : accessibilityOptions.textSize === "small"
-                  ? "text-base"
-                  : "text-lg"
+                  ? "text-sm sm:text-base"
+                  : "text-base sm:text-lg"
             }`}
             onClick={() => speakText("Choose your profile to start playing EmoStory!")}
           >
@@ -194,7 +266,7 @@ export default function ProfileSelection({
         </div>
 
         {/* Child Profiles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8 px-4 sm:px-0">
           {profiles.map((child) => (
             <Card
               key={child.id}
@@ -216,8 +288,8 @@ export default function ProfileSelection({
                 </Button>
               </div>
 
-              <CardContent className="p-8 text-center">
-                <div className="text-6xl mb-4 animate-bounce">{child.avatar}</div>
+              <CardContent className="p-4 sm:p-8 text-center">
+                <div className="text-4xl sm:text-6xl mb-4 animate-bounce">{child.avatar}</div>
                 <h3
                   className={`font-bold text-gray-900 mb-2 ${
                     accessibilityOptions.textSize === "large"
@@ -322,6 +394,80 @@ export default function ProfileSelection({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Help Modal */}
+      <Dialog open={helpModalOpen} onOpenChange={setHelpModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center mb-4">
+              {helpType ? (helpType === "parent" ? "Parent Guide 👨‍👩‍👧‍👦" : "Child Guide 🌟") : "Help & Tutorial 📚"}
+            </DialogTitle>
+          </DialogHeader>
+
+          {!helpType ? (
+            <div className="space-y-4">
+              <p className="text-center text-gray-600 mb-6">
+                Choose your help guide to get started with EmoStory!
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button
+                  onClick={() => handleHelpTypeSelect("parent")}
+                  className="h-32 flex flex-col items-center justify-center space-y-2 bg-blue-500 hover:bg-blue-600"
+                >
+                  <div className="text-4xl">👨‍👩‍👧‍👦</div>
+                  <div className="text-lg font-semibold">Parent Guide</div>
+                  <div className="text-sm opacity-90">Setup, monitoring & settings</div>
+                </Button>
+
+                <Button
+                  onClick={() => handleHelpTypeSelect("child")}
+                  className="h-32 flex flex-col items-center justify-center space-y-2 bg-purple-500 hover:bg-purple-600"
+                >
+                  <div className="text-4xl">🌟</div>
+                  <div className="text-lg font-semibold">Child Guide</div>
+                  <div className="text-sm opacity-90">How to play & learn</div>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <Button
+                onClick={() => setHelpType(null)}
+                variant="outline"
+                className="mb-4"
+              >
+                ← Back to Help Options
+              </Button>
+
+              <div className="space-y-4">
+                {getHelpSteps().map((step, index) => (
+                  <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
+                        <p className="text-gray-700">{step.content}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                <h4 className="font-semibold text-blue-800 mb-2">💡 Tip</h4>
+                <p className="text-blue-700 text-sm">
+                  {helpType === "parent"
+                    ? "You can access more detailed analytics and settings through the Parent/Therapist Dashboard."
+                    : "Remember to ask a grown-up if you need help understanding any of the stories!"}
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
