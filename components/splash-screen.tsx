@@ -66,15 +66,17 @@ export default function SplashScreen({ onAccessibilityClick }: SplashScreenProps
             <p className="text-xl text-sky-700 font-medium">Loading EmoStory...</p>
             <div className="text-2xl animate-pulse">🌟</div>
           </div>
+          <div className="flex justify-center">
+            <div className="w-64 h-2 bg-white/40 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-sky-500 transition-all duration-300 ease-out"
+                style={{ width: `${loadingProgress}%` }}
+              />
+            </div>
+          </div>
 
           {/* Progress Bar */}
-          <div className="w-64 h-2 bg-white/40 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-sky-500 transition-all duration-300 ease-out"
-              style={{ width: `${loadingProgress}%` }}
-            />
-          </div>
-          <p className="text-sky-600">{loadingProgress}%</p>
+          <p className="text-center text-sky-600">{loadingProgress}%</p>
         </div>
       </div>
 
