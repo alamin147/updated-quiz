@@ -80,7 +80,7 @@ const mockScenarios: Scenario[] = [
     choices: [
       { id: "share", text: "Share the toy", type: "positive", icon: "🤝" },
       { id: "take", text: "Take the toy", type: "negative", icon: "😠" },
-      { id: "ask", text: "Ask for turns", type: "positive", icon: "🗣️" },
+      { id: "ask", text: "Ask for turns", type: "neutral", icon: "🗣️" },
     ],
   },
   {
@@ -247,22 +247,18 @@ export default function ScenarioSelection({
 
         {/* Scenarios Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {filteredScenarios.map((scenario) => (
+          {filteredScenarios?.map((scenario) => (
             <Card
               key={scenario.id}
               className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
-                scenario.completed ? "bg-green-50 border-green-200" : "hover:bg-blue-50"
+                scenario.completed ? "hover:bg-blue-50" : "hover:bg-blue-50"
               }`}
               onClick={() => handleScenarioClick(scenario)}
             >
               <CardHeader className="text-center pb-4">
                 <div className="relative">
                   <div className="text-6xl mb-4">{scenario.icon}</div>
-                  {scenario.completed && (
-                    <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-2">
-                      <Star className="h-4 w-4 fill-current" />
-                    </div>
-                  )}
+
                 </div>
                 <CardTitle
                   className={`text-gray-900 ${
