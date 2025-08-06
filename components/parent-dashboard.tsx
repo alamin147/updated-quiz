@@ -196,6 +196,26 @@ export default function ParentDashboard({ profiles = [], onBack, onSettings }: P
     setAnimationKey((prev) => prev + 1)
   }, [selectedChild])
 
+  // Don't render anything until data is loaded and there are profiles
+  if (!selectedChild || childrenData.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 relative flex items-center justify-center">
+        <FloatingStickers />
+        <div className="max-w-md mx-auto relative z-10 bg-white/90 backdrop-blur-sm rounded-lg p-8 text-center">
+          <div className="text-6xl mb-4">👨‍👩‍👧‍👦</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">No Child Profiles Found</h2>
+          <p className="text-gray-600 mb-6">
+            Create child profiles first to view their progress and insights.
+          </p>
+          <Button onClick={onBack} className="w-full">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Profile Selection
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 relative">
       <FloatingStickers />
