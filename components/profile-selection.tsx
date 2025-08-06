@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Lock, Trash2 } from "lucide-react"
+import { Plus, Lock, Trash2, Settings, HelpCircle } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,6 +87,7 @@ interface ProfileSelectionProps {
   onCreateProfile: () => void
   onDeleteProfile: (childId: string) => void
   onParentLogin: () => void
+  onSettings: () => void
   accessibilityOptions: AccessibilityOptions
 }
 
@@ -96,6 +97,7 @@ export default function ProfileSelection({
   onCreateProfile,
   onDeleteProfile,
   onParentLogin,
+  onSettings,
   accessibilityOptions,
 }: ProfileSelectionProps) {
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null)
@@ -132,10 +134,38 @@ export default function ProfileSelection({
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-purple-50 relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 relative">
       <FloatingStickers />
-      <div className="relative z-10 w-full max-w-4xl">
-        {/* Title */}
+      <div className="relative z-10">
+        {/* Header with Settings and Help */}
+        <div className="flex justify-between items-center p-6">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-semibold text-gray-800">EmoStory</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={onSettings}
+              variant="ghost"
+              size="icon"
+              className="hover:bg-white/20 transition-colors"
+              title="Settings"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-white/20 transition-colors"
+              title="Help & Tutorial"
+            >
+              <HelpCircle className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center p-8">
+          <div className="w-full max-w-4xl">
+            {/* Title */}
         <div className="text-center mb-12">
           <h1
             className={`font-bold text-gray-900 mb-4 ${
@@ -267,6 +297,8 @@ export default function ProfileSelection({
             <Lock className="h-5 w-5" />
             <span>Parent/Therapist Login</span>
           </Button>
+        </div>
+          </div>
         </div>
       </div>
 

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Check } from "lucide-react"
+import { ArrowLeft, Check, Settings, HelpCircle } from "lucide-react"
 import type { AccessibilityOptions, ChildProfile } from "@/app/page"
 
 // Floating Stickers Background Component
@@ -65,12 +65,13 @@ const FloatingStickers = () => {
 interface CreateChildProfileProps {
   onComplete: (child: ChildProfile) => void
   onBack: () => void
+  onSettings: () => void
   accessibilityOptions: AccessibilityOptions
 }
 
 const avatarOptions = ["🦝", "🐠", "🦋", "🐸", "🐱", "🐶", "🐰", "🦊", "🐼", "🐨", "🦁", "🐯", "🐸", "🐙", "🦄", "🐲"]
 
-export default function CreateChildProfile({ onComplete, onBack, accessibilityOptions }: CreateChildProfileProps) {
+export default function CreateChildProfile({ onComplete, onBack, onSettings, accessibilityOptions }: CreateChildProfileProps) {
   const [step, setStep] = useState<"name" | "avatar" | "confirm">("name")
   const [name, setName] = useState("")
   const [selectedAvatar, setSelectedAvatar] = useState("")
@@ -112,15 +113,38 @@ export default function CreateChildProfile({ onComplete, onBack, accessibilityOp
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-purple-50 relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 relative">
       <FloatingStickers />
-      {/* Back Button */}
-      <Button onClick={onBack} className="absolute top-6 left-6" variant="ghost" size="lg">
-        <ArrowLeft className="h-5 w-5 mr-2" />
-        Back
-      </Button>
 
-      <Card className="w-full max-w-2xl shadow-2xl">
+      {/* Header with Navigation */}
+      <div className="flex justify-between items-center p-6">
+        <Button onClick={onBack} variant="ghost" size="lg">
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Back
+        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={onSettings}
+            variant="ghost"
+            size="icon"
+            className="hover:bg-white/20 transition-colors"
+            title="Settings"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-white/20 transition-colors"
+            title="Help & Tutorial"
+          >
+            <HelpCircle className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center p-8">
+        <Card className="w-full max-w-2xl shadow-2xl">
         <CardHeader className="text-center">
           <CardTitle
             className={`text-gray-900 ${
@@ -265,6 +289,7 @@ export default function CreateChildProfile({ onComplete, onBack, accessibilityOp
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

@@ -214,6 +214,7 @@ export default function App() {
             onCreateProfile={() => setCurrentScreen("create-profile")}
             onDeleteProfile={handleChildDelete}
             onParentLogin={() => setCurrentScreen("parent-login")}
+            onSettings={() => setCurrentScreen("settings")}
             accessibilityOptions={accessibilityOptions}
           />
         )
@@ -223,6 +224,7 @@ export default function App() {
           <CreateChildProfile
             onComplete={handleChildCreate}
             onBack={() => setCurrentScreen("profile-selection")}
+            onSettings={() => setCurrentScreen("settings")}
             accessibilityOptions={accessibilityOptions}
           />
         )
