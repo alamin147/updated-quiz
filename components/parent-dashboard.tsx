@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Settings, ArrowLeft, TrendingUp, Star, Clock, Target, HelpCircle } from "lucide-react"
 import HelpTutorial from "./help-tutorial"
+import type { ChildProfile } from "@/app/page"
 import {
   BarChart,
   Bar,
@@ -24,6 +25,7 @@ import {
 } from "recharts"
 
 interface ParentDashboardProps {
+  profiles?: ChildProfile[]
   onBack: () => void
   onSettings: () => void
 }
@@ -175,8 +177,11 @@ const FloatingStickers = () => {
   )
 }
 
-export default function ParentDashboard({ onBack, onSettings }: ParentDashboardProps) {
-  const [selectedChild, setSelectedChild] = useState(childrenData[0])
+export default function ParentDashboard({ profiles = [], onBack, onSettings }: ParentDashboardProps) {
+  // Use real profiles or fallback to empty array
+  const childrenData = profiles.length > 0 ? profiles : []
+
+  const [selectedChild, setSelectedChild] = useState(childrenData[0] || null)
   const [activeTab, setActiveTab] = useState("overview")
   const [showHelpTutorial, setShowHelpTutorial] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
@@ -333,9 +338,9 @@ export default function ParentDashboard({ onBack, onSettings }: ParentDashboardP
                 <CardTitle>Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                {selectedChild.recentActivity.length > 0 ? (
+                {selectedChild && selectedChild.recentActivity && selectedChild.recentActivity.length > 0 ? (
                   <div className="space-y-4">
-                    {selectedChild.recentActivity.map((activity, index) => (
+                    {selectedChild.recentActivity.map((activity: any, index: number) => (
                       <div
                         key={index}
                         className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -382,7 +387,7 @@ export default function ParentDashboard({ onBack, onSettings }: ParentDashboardP
                         }}
                         formatter={(value) => [`${value}%`, "Success Rate"]}
                       />
-                      <Bar dataKey="percentage" fill="#22c55e" radius={[4, 4, 0, 0]} stroke="#1ea34d" strokeWidth={1} />
+                      <Bar dataKey="percentage" fill="#5e94eb" radius={[4, 4, 0, 0]} stroke="#1ea34d" strokeWidth={1} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

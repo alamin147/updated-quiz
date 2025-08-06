@@ -138,6 +138,44 @@ export default function App() {
     setCurrentScreen("scenario-play")
   }
 
+  const handleProgressUpdate = (childId: string, progressData: {
+    scenario: string
+    choice: string
+    outcome: "positive" | "neutral" | "negative"
+    timeSpent: number
+    facialExpression?: number
+  }) => {
+    const child = getProfile(childId)
+    if (child) {
+      // Update child's progress
+      const newActivity = {
+        scenario: progressData.scenario,
+        choice: progressData.choice,
+        outcome: progressData.outcome,
+        timestamp: new Date().toISOString().split('T')[0]
+      }
+
+      const updatedChild: Partial<ChildProfile> = {
+        scenariosCompleted: child.scenariosCompleted + 1,
+        timeSpent: child.timeSpent + progressData.timeSpent,
+        recentActivity: [newActivity, ...child.recentActivity.slice(0, 9)], // Keep last 10 activities
+        goodChoicePercentage: Math.round(
+          ((child.goodChoicePercentage * child.scenariosCompleted) +
+           (progressData.outcome === "positive" ? 100 : progressData.outcome === "neutral" ? 50 : 0)) /
+          (child.scenariosCompleted + 1)
+        ),
+        avgPositiveExpression: progressData.facialExpression
+          ? Math.round(
+              ((child.avgPositiveExpression * child.scenariosCompleted) + progressData.facialExpression) /
+              (child.scenariosCompleted + 1)
+            )
+          : child.avgPositiveExpression
+      }
+
+      updateProfile(childId, updatedChild)
+    }
+  }
+
   const renderCurrentScreen = () => {
     switch (currentScreen) {
       case "splash":
@@ -191,6 +229,7 @@ export default function App() {
       case "parent-dashboard":
         return (
           <ParentDashboard
+            profiles={profiles}
             onBack={() => setCurrentScreen("profile-selection")}
             onSettings={() => setCurrentScreen("settings")}
           />
@@ -214,6 +253,7 @@ export default function App() {
             child={selectedChild}
             onComplete={() => setCurrentScreen("scenario-selection")}
             onBack={() => setCurrentScreen("scenario-selection")}
+            onUpdateProgress={handleProgressUpdate}
             accessibilityOptions={accessibilityOptions}
           />
         )

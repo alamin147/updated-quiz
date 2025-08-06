@@ -66,18 +66,26 @@ interface ScenarioPlayProps {
   child: ChildProfile | null
   onComplete: () => void
   onBack: () => void
+  onUpdateProgress?: (childId: string, progressData: {
+    scenario: string
+    choice: string
+    outcome: "positive" | "neutral" | "negative"
+    timeSpent: number
+    facialExpression?: number
+  }) => void
   accessibilityOptions: AccessibilityOptions
 }
 
 type GameState = "intro" | "choices" | "feedback" | "outcome"
 type EmotionDetection = "happy" | "neutral" | "sad" | "none"
 
-export default function ScenarioPlay({ scenario, child, onComplete, onBack, accessibilityOptions }: ScenarioPlayProps) {
+export default function ScenarioPlay({ scenario, child, onComplete, onBack, onUpdateProgress, accessibilityOptions }: ScenarioPlayProps) {
   const [gameState, setGameState] = useState<GameState>("intro")
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null)
   const [detectedEmotion, setDetectedEmotion] = useState<EmotionDetection>("none")
   const [showFacialFeedback, setShowFacialFeedback] = useState(false)
   const [cameraActive, setCameraActive] = useState(false)
+  const [startTime] = useState(Date.now())
 
   const speakText = (text: string) => {
     if (accessibilityOptions.textToSpeech && "speechSynthesis" in window) {
@@ -129,6 +137,25 @@ export default function ScenarioPlay({ scenario, child, onComplete, onBack, acce
 
   const handleComplete = () => {
     speakText("Great job completing this story!")
+
+    // Track progress if update function is provided
+    if (child && scenario && selectedChoice && onUpdateProgress) {
+      const selectedChoiceData = scenario.choices.find(choice => choice.id === selectedChoice)
+      if (selectedChoiceData) {
+        const timeSpent = Math.round((Date.now() - startTime) / 1000 / 60) // Convert to minutes
+        const facialExpression = detectedEmotion === "happy" ? 85 : detectedEmotion === "neutral" ? 65 : 45
+
+        // Track progress
+        onUpdateProgress(child.id, {
+          scenario: scenario.title,
+          choice: selectedChoiceData.text,
+          outcome: selectedChoiceData.type,
+          timeSpent: Math.max(1, timeSpent), // Ensure at least 1 minute
+          facialExpression: facialExpression
+        })
+      }
+    }
+
     onComplete()
   }
 
@@ -464,7 +491,7 @@ export default function ScenarioPlay({ scenario, child, onComplete, onBack, acce
 
                 <div className="flex justify-center gap-4">
                   <Button
-                    onClick={onComplete}
+                    onClick={handleComplete}
                     size="lg"
                     className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-2 px-8"
                   >
