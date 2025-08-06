@@ -1,5 +1,5 @@
 
 # TODO
-- [] profile delete
+- [x] profile delete
 - [] ui update
 - [] responsive design

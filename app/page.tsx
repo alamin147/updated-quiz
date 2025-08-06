@@ -133,6 +133,14 @@ export default function App() {
     markAsReturningUser()
   }
 
+  const handleChildDelete = (childId: string) => {
+    // If we're deleting the currently selected child, clear selection
+    if (selectedChildId === childId) {
+      clearSelectedChild()
+    }
+    deleteProfile(childId)
+  }
+
   const handleScenarioSelect = (scenario: Scenario) => {
     setSelectedScenario(scenario)
     setCurrentScreen("scenario-play")
@@ -204,6 +212,7 @@ export default function App() {
             profiles={profiles}
             onChildSelect={handleChildSelect}
             onCreateProfile={() => setCurrentScreen("create-profile")}
+            onDeleteProfile={handleChildDelete}
             onParentLogin={() => setCurrentScreen("parent-login")}
             accessibilityOptions={accessibilityOptions}
           />

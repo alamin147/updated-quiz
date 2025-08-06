@@ -1,13 +1,29 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Plus, Lock } from "lucide-react"
+import { Plus, Lock, Trash2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import type { AccessibilityOptions, ChildProfile } from "@/app/page"
 
 // Floating Stickers Background Component
 const FloatingStickers = () => {
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   const stickers = [
     "🌟",
     "⭐",
@@ -30,6 +46,11 @@ const FloatingStickers = () => {
     "🌺",
     "🌻",
   ]
+
+  // Don't render anything on server to avoid hydration mismatch
+  if (!isClient) {
+    return null
+  }
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -64,6 +85,7 @@ interface ProfileSelectionProps {
   profiles: ChildProfile[]
   onChildSelect: (child: ChildProfile) => void
   onCreateProfile: () => void
+  onDeleteProfile: (childId: string) => void
   onParentLogin: () => void
   accessibilityOptions: AccessibilityOptions
 }
@@ -72,10 +94,13 @@ export default function ProfileSelection({
   profiles,
   onChildSelect,
   onCreateProfile,
+  onDeleteProfile,
   onParentLogin,
   accessibilityOptions,
 }: ProfileSelectionProps) {
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [profileToDelete, setProfileToDelete] = useState<ChildProfile | null>(null)
 
   const speakText = (text: string) => {
     if (accessibilityOptions.textToSpeech && "speechSynthesis" in window) {
@@ -89,6 +114,21 @@ export default function ProfileSelection({
     setSelectedProfile(child.id)
     speakText(`Selected ${child.name}. ${child.scenariosCompleted} scenarios completed.`)
     setTimeout(() => onChildSelect(child), 500)
+  }
+
+  const handleDeleteClick = (child: ChildProfile, event: React.MouseEvent) => {
+    event.stopPropagation() // Prevent card click
+    setProfileToDelete(child)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (profileToDelete) {
+      onDeleteProfile(profileToDelete.id)
+      speakText(`${profileToDelete.name}'s profile has been deleted.`)
+      setProfileToDelete(null)
+    }
+    setDeleteDialogOpen(false)
   }
 
   return (
@@ -128,11 +168,24 @@ export default function ProfileSelection({
           {profiles.map((child) => (
             <Card
               key={child.id}
-              className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+              className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 relative ${
                 selectedProfile === child.id ? "ring-4 ring-blue-500 bg-blue-50" : "hover:bg-gray-50"
               }`}
               onClick={() => handleChildSelect(child)}
             >
+              {/* Delete Button */}
+              <div className="absolute top-2 right-2 z-10">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 bg-red-100 hover:bg-red-200 text-red-600 shadow-sm"
+                  onClick={(e) => handleDeleteClick(child, e)}
+                  title="Delete Profile"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+
               <CardContent className="p-8 text-center">
                 <div className="text-6xl mb-4 animate-bounce">{child.avatar}</div>
                 <h3
@@ -216,6 +269,27 @@ export default function ProfileSelection({
           </Button>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Profile</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {profileToDelete?.name}'s profile? This will permanently remove all their progress and data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete Profile
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
